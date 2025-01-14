@@ -11,16 +11,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("!prod")
-public class EazyBankUsernamePasswordAuthProvider implements AuthenticationProvider {
-
+@Profile("prod")
+public class EazyBankUsernamePasswordProdAuthProvider implements AuthenticationProvider{
+	
 	private static EazyBankuserDetailsService eazyBankuserDetailsService;
 	private static PasswordEncoder passwordEncoder;
-
-	public EazyBankUsernamePasswordAuthProvider(EazyBankuserDetailsService eazyBankuserDetailsService,
+	
+	public EazyBankUsernamePasswordProdAuthProvider(EazyBankuserDetailsService eazyBankuserDetailsService,
 			PasswordEncoder passwordEncoder) {
-		EazyBankUsernamePasswordAuthProvider.eazyBankuserDetailsService = eazyBankuserDetailsService;
-		EazyBankUsernamePasswordAuthProvider.passwordEncoder = passwordEncoder;
+		EazyBankUsernamePasswordProdAuthProvider.eazyBankuserDetailsService = eazyBankuserDetailsService;
+		EazyBankUsernamePasswordProdAuthProvider.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -28,9 +28,12 @@ public class EazyBankUsernamePasswordAuthProvider implements AuthenticationProvi
 		String username = authentication.getName();
 		String password = authentication.getCredentials().toString();
 		UserDetails userDetails = eazyBankuserDetailsService.loadUserByUsername(username);
-
-		return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
-
+		if(passwordEncoder.matches(password, userDetails.getPassword())) {
+			return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
+		}
+		else {
+			throw new BadCredentialsException("Invalid Credentials.");
+		}
 	}
 
 	@Override
