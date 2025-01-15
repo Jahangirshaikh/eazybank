@@ -16,7 +16,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.csrf((csrfConfig) -> csrfConfig.disable())
+        http
+        .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
+        .csrf((csrfConfig) -> csrfConfig.disable())
         .authorizeHttpRequests((requests)->requests.requestMatchers("/account","/balance","/loans","/cards").authenticated()
             .requestMatchers("/contact","/notice", "/register").permitAll())
             .formLogin(org.springframework.security.config.Customizer.withDefaults())
